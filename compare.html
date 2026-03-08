@@ -108,8 +108,8 @@
         pointer-events: none; overflow: visible;
       }
       #svg-panel .curve-overlay svg {
-        position: absolute; top: 33.333%; left: -20%;
-        width: 140%; height: 66.666%; overflow: visible;
+        position: absolute; top: 0; left: -20%;
+        width: 140%; height: 100%; overflow: hidden;
       }
       #svg-panel .curve-overlay svg path { will-change: stroke-dashoffset; }
     </style>
@@ -159,11 +159,11 @@
         </div>
 
         <div class="curve-overlay">
-          <svg viewBox="0 0 1400 700" fill="none" preserveAspectRatio="none">
-            <path id="curve-1-border" d="M -100,10 C 700,10 1050,-20 1500,480" stroke="#0f0f0f" stroke-width="188" stroke-linecap="round" />
-            <path id="curve-1" d="M -100,10 C 700,10 1050,-20 1500,480" stroke="#FFC412" stroke-width="180" stroke-linecap="round" />
-            <path id="curve-2-border" d="M -100,120 C 700,120 1050,90 1500,590" stroke="#0f0f0f" stroke-width="188" stroke-linecap="round" />
-            <path id="curve-2" d="M -100,120 C 700,120 1050,90 1500,590" stroke="#FF6D38" stroke-width="180" stroke-linecap="round" />
+          <svg viewBox="0 0 1400 1050" fill="none" preserveAspectRatio="none">
+            <path id="curve-1-border" d="M -300,525 C 400,525 900,700 1500,2150" stroke="#0f0f0f" stroke-width="360" stroke-linecap="butt" />
+            <path id="curve-1" d="M -300,525 C 400,525 900,700 1500,2150" stroke="#FFC412" stroke-width="350" stroke-linecap="butt" />
+            <path id="curve-2-border" d="M -300,525 C 400,525 900,700 1500,2150" stroke="#0f0f0f" stroke-width="360" stroke-linecap="butt" />
+            <path id="curve-2" d="M -300,525 C 400,525 900,700 1500,2150" stroke="#FF6D38" stroke-width="350" stroke-linecap="butt" />
           </svg>
         </div>
       </div>

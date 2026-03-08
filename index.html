@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nvg8 Scroll Animation | Codegrid</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <section class="intro">
+      <!-- Text overlays -->
+      <h1 class="intro-header-in">Scroll down to watch calm quietly unravel</h1>
+      <h1 class="intro-header-out">Welcome back, things have shifted again</h1>
+
+      <!-- Animation container: 3 rows, each with enter + wipe + sweep layers -->
+      <div class="block-container">
+        <div class="block-row row-top">
+          <div class="block-layer layer-enter"></div>
+          <div class="block-layer layer-wipe"></div>
+          <div class="block-layer layer-sweep"></div>
+
+        </div>
+        <div class="block-row row-mid">
+          <div class="block-layer layer-enter"></div>
+          <div class="block-layer layer-wipe"></div>
+          <div class="block-layer layer-sweep"></div>
+
+        </div>
+        <div class="block-row row-bot">
+          <div class="block-layer layer-enter"></div>
+          <div class="block-layer layer-wipe"></div>
+          <div class="block-layer layer-sweep"></div>
+
+        </div>
+      </div>
+
+      <!-- Curve overlay: thick curved strokes that sweep across rows 2+3 -->
+      <div class="curve-overlay">
+        <svg viewBox="0 0 1400 700" fill="none" preserveAspectRatio="none">
+          <!-- Curve 1: yellow/gold — upper arc -->
+          <path
+            id="curve-1-border"
+            d="M -100,10 C 700,10 1050,-20 1500,480"
+            stroke="#0f0f0f"
+            stroke-width="188"
+            stroke-linecap="round"
+          />
+          <path
+            id="curve-1"
+            d="M -100,10 C 700,10 1050,-20 1500,480"
+            stroke="#FFC412"
+            stroke-width="180"
+            stroke-linecap="round"
+          />
+          <!-- Curve 2: orange — lower arc (offset path) -->
+          <path
+            id="curve-2-border"
+            d="M -100,120 C 700,120 1050,90 1500,590"
+            stroke="#0f0f0f"
+            stroke-width="188"
+            stroke-linecap="round"
+          />
+          <path
+            id="curve-2"
+            d="M -100,120 C 700,120 1050,90 1500,590"
+            stroke="#FF6D38"
+            stroke-width="180"
+            stroke-linecap="round"
+          />
+        </svg>
+      </div>
+    </section>
+
+    <section class="outro">
+      <h1>This is the outro, pretend it's profound</h1>
+    </section>
+
+    <script type="module" src="/script.js"></script>
+  </body>
+</html>

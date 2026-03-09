@@ -1,79 +1,280 @@
 import { Rive, Layout, Fit, Alignment } from "@rive-app/canvas";
 import gsap from "gsap";
 
-// ── Init curves (stroke-dashoffset) ──
+const panel = "#svg-panel";
 
-document.querySelectorAll("#svg-panel .curve-overlay svg path").forEach((path) => {
-  const len = path.getTotalLength();
-  path.style.strokeDasharray = len;
-  path.style.strokeDashoffset = len;
+document.querySelectorAll(`${panel} .svg-row svg path`).forEach((originalPath) => {
+  const borderPath = originalPath.cloneNode(true);
+  const originalWidth = parseInt(originalPath.getAttribute("stroke-width"));
+  borderPath.setAttribute("stroke", "#0f0f0f");
+  borderPath.setAttribute("stroke-width", originalWidth + 10);
+  borderPath.classList.add("border-path");
+  originalPath.parentElement.insertBefore(borderPath, originalPath);
 });
 
-// ── SVG Panel: Build GSAP timeline (mirrors script.js) ──
+document.querySelectorAll(`${panel} .svg-container-2 svg`).forEach((svg) => {
+  const viewBox = svg.getAttribute("viewBox");
+  if (!viewBox) return;
+  const [x, y, width, height] = viewBox.split(" ").map(Number);
+  svg.setAttribute("viewBox", `${x} ${y - 10} ${width} ${height + 20}`);
+});
+
+// Change linecap to butt — arrow/D-cap polygons replace the round tip
+document.querySelectorAll(`${panel} .svg-row svg path`).forEach((path) => {
+  path.setAttribute("stroke-linecap", "butt");
+});
+
+document.querySelectorAll(`${panel} .svg-row svg path`).forEach((path) => {
+  const pathLength = path.getTotalLength();
+  path.style.strokeDasharray = pathLength;
+  path.style.strokeDashoffset = pathLength;
+});
+
+// Arrow: neck at origin, body hidden behind stroke, tip visible forward
+const SVG_NS = "http://www.w3.org/2000/svg";
+const straightArrowPath = "M-500 -150 Q-500 -180 -470 -180 L120 -180 Q150 -180 171 -159 L309 -21 Q330 0 309 21 L171 159 Q150 180 120 180 L-470 180 Q-500 180 -500 150Z";
+const curveArrowPath = "M-20 -150 Q-20 -180 10 -180 L120 -180 Q150 -180 171 -159 L309 -21 Q330 0 309 21 L171 159 Q150 180 120 180 L10 180 Q-20 180 -20 150Z";
+const curveArrowFillPath = "M-75 -150 Q-75 -180 10 -180 L120 -180 Q150 -180 171 -159 L309 -21 Q330 0 309 21 L171 159 Q150 180 120 180 L10 180 Q-75 180 -75 150Z";
+const curveTrailingCapFillD = "M 20 -180 L -15 -180 Q -45 -180 -45 -150 L -45 150 Q -45 180 -15 180 L 20 180 Z";
+const curveTrailingCapBorderD = "M 20 -185 L -15 -185 Q -50 -185 -50 -150 L -50 150 Q -50 185 -15 185 L 20 185 Z";
+
+function createArrow(svg, color, d, fillD) {
+  const g = document.createElementNS(SVG_NS, "g");
+  const border = document.createElementNS(SVG_NS, "path");
+  border.setAttribute("d", d);
+  border.setAttribute("fill", "#0f0f0f");
+  border.setAttribute("stroke", "#0f0f0f");
+  border.setAttribute("stroke-width", "10");
+  border.setAttribute("stroke-linejoin", "round");
+  g.appendChild(border);
+  const fill = document.createElementNS(SVG_NS, "path");
+  fill.setAttribute("d", fillD || d);
+  fill.setAttribute("fill", color);
+  g.appendChild(fill);
+  svg.insertBefore(g, svg.firstChild);
+  gsap.set(g, { transformOrigin: "0 0" });
+  return g;
+}
+
+function createEndCap(svg, cx, cy, color) {
+  const g = document.createElementNS(SVG_NS, "g");
+  const h = 180;
+  const cr = 30;
+  const d = cr + 15;
+  const t = cy - h;
+  const b = cy + h;
+  const l = cx - d;
+  const be = 5;
+  const bt = t - be;
+  const bb = b + be;
+  const bl = l - be;
+  const bcr = cr + be;
+  const borderD = `M ${cx} ${bt} L ${bl + bcr} ${bt} Q ${bl} ${bt} ${bl} ${bt + bcr} L ${bl} ${bb - bcr} Q ${bl} ${bb} ${bl + bcr} ${bb} L ${cx} ${bb} Z`;
+  const fillD = `M ${cx} ${t} L ${l + cr} ${t} Q ${l} ${t} ${l} ${t + cr} L ${l} ${b - cr} Q ${l} ${b} ${l + cr} ${b} L ${cx} ${b} Z`;
+  const border = document.createElementNS(SVG_NS, "path");
+  border.setAttribute("d", borderD);
+  border.setAttribute("fill", "#0f0f0f");
+  g.appendChild(border);
+  const fill = document.createElementNS(SVG_NS, "path");
+  fill.setAttribute("d", fillD);
+  fill.setAttribute("fill", color);
+  g.appendChild(fill);
+  svg.appendChild(g);
+  g.setAttribute("opacity", "0");
+  return g;
+}
+
+function createCurveTrailingCap(svg, color) {
+  const g = document.createElementNS(SVG_NS, "g");
+  const border = document.createElementNS(SVG_NS, "path");
+  border.setAttribute("d", curveTrailingCapBorderD);
+  border.setAttribute("fill", "#0f0f0f");
+  g.appendChild(border);
+  const fill = document.createElementNS(SVG_NS, "path");
+  fill.setAttribute("d", curveTrailingCapFillD);
+  fill.setAttribute("fill", color);
+  g.appendChild(fill);
+  g.setAttribute("opacity", "0");
+  svg.appendChild(g);
+  return g;
+}
 
 function buildSvgTimeline() {
   const tl = gsap.timeline({ paused: true });
-  const p = "#svg-panel";
 
-  // Hide all layers off-screen initially
-  tl.set(`${p} .block-layer`, { xPercent: -110 }, 0);
+  const startOffset = 2.16;
 
-  // Phase 1: Enter (11→21)
-  tl.fromTo(`${p} .row-top .layer-enter`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 11);
-  tl.fromTo(`${p} .row-mid .layer-enter`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 12);
-  tl.fromTo(`${p} .row-bot .layer-enter`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 13);
+  const strokeRevealOrder = [
+    "svg-top-1",
+    "svg-bottom-1",
+    "svg-middle-1",
+    "svg-top-2",
+    "svg-bottom-2",
+    "svg-middle-2",
+    "svg-top-3",
+    "svg-middle-3",
+    "svg-bottom-3",
+  ];
 
-  // Phase 2: Wipe (21→33)
-  tl.fromTo(`${p} .row-top .layer-wipe`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 21);
-  tl.fromTo(`${p} .row-bot .layer-wipe`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 22);
-  tl.fromTo(`${p} .row-mid .layer-wipe`, { xPercent: -110 }, { xPercent: 0, duration: 12, ease: "power2.out" }, 23);
+  strokeRevealOrder.forEach((id, index) => {
+    const paths = document.querySelectorAll(`${panel} #${id} path`);
+    const svg = document.querySelector(`${panel} #${id}`);
+    const colorPath = svg.querySelector("path:not(.border-path)");
+    const color = colorPath.getAttribute("stroke");
+    const arrowG = createArrow(svg, color, straightArrowPath);
+    const endCapG = createEndCap(svg, 180, 180, color);
 
-  // Phase 3: Sweep + Curves (29→40) — third color wave + curves draw/erase
-  tl.fromTo(`${p} .row-top .layer-sweep`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 29);
-  tl.fromTo(`${p} .row-mid .layer-sweep`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 31);
-  tl.fromTo(`${p} .row-bot .layer-sweep`, { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 30);
+    gsap.set(arrowG, { x: 180, y: 180, opacity: 0 });
 
-  // Curve 1 (yellow): draw in
-  tl.to([`${p} #curve-1-border`, `${p} #curve-1`], {
-    strokeDashoffset: 0, duration: 6, ease: "power1.out",
-  }, 28);
+    const t = startOffset + index * 0.3;
 
-  // Curve 1: erase
-  [`${p} #curve-1-border`, `${p} #curve-1`].forEach((sel) => {
-    const path = document.querySelector(sel);
-    if (!path) return;
-    const len = path.getTotalLength();
-    tl.to(sel, { strokeDashoffset: -len, duration: 7, ease: "power2.inOut" }, 34);
+    tl.to(
+      paths,
+      {
+        strokeDashoffset: 0,
+        duration: 1.5,
+        ease: "power2.out",
+      },
+      t,
+    );
+
+    tl.set(arrowG, { opacity: 1 }, t);
+    tl.set(endCapG, { attr: { opacity: 1 } }, t);
+    tl.to(
+      arrowG,
+      {
+        x: 3180,
+        duration: 1.5,
+        ease: "power2.out",
+      },
+      t,
+    );
   });
 
-  // Curve 2 (orange): draw in
-  tl.to([`${p} #curve-2-border`, `${p} #curve-2`], {
-    strokeDashoffset: 0, duration: 6, ease: "power1.out",
-  }, 31);
+  const curveStrokeOrder = ["svg-curve-1", "svg-curve-2"];
+  const curveStartTime = 5 * 0.3 + 0.3;
+  curveStrokeOrder.forEach((id, index) => {
+    const paths = document.querySelectorAll(`${panel} #${id} path`);
+    const svg = document.querySelector(`${panel} #${id}`);
+    const colorPath = svg.querySelector("path:not(.border-path)");
+    const color = colorPath.getAttribute("stroke");
+    const pathLength = colorPath.getTotalLength();
+    const arrowG = createArrow(svg, color, curveArrowPath, curveArrowFillPath);
+    const endCapG = createEndCap(svg, 180, 180.538, color);
+    // Move curve arrow to top layer, then endCap above arrow
+    svg.appendChild(arrowG);
+    svg.appendChild(endCapG);
+    const trailingCapG = createCurveTrailingCap(svg, color);
+    // Clear GSAP's CSS transform overrides so SVG transform attribute works
+    arrowG.style.translate = '';
+    arrowG.style.rotate = '';
+    arrowG.style.scale = '';
+    arrowG.style.transformOrigin = '';
+    const curveStartAt = startOffset + curveStartTime + index * 1.7;
 
-  // Curve 2: erase
-  [`${p} #curve-2-border`, `${p} #curve-2`].forEach((sel) => {
-    const path = document.querySelector(sel);
-    if (!path) return;
-    const len = path.getTotalLength();
-    tl.to(sel, { strokeDashoffset: -len, duration: 7, ease: "power2.inOut" }, 37);
+    const startPt = colorPath.getPointAtLength(0);
+    const startPt2 = colorPath.getPointAtLength(1);
+    const startAngle =
+      Math.atan2(startPt2.y - startPt.y, startPt2.x - startPt.x) *
+      (180 / Math.PI);
+
+    function setArrowTransform(x, y, angle) {
+      arrowG.setAttribute("transform", `translate(${x},${y}) rotate(${angle})`);
+    }
+
+    setArrowTransform(startPt.x, startPt.y, startAngle);
+    arrowG.setAttribute("opacity", "0");
+    trailingCapG.setAttribute("transform", `translate(${startPt.x},${startPt.y}) rotate(${startAngle})`);
+
+    const curveDur = 2.5;
+
+    tl.to(
+      paths,
+      {
+        strokeDashoffset: 0,
+        duration: curveDur,
+        ease: "none",
+      },
+      curveStartAt,
+    );
+
+    const proxy = { length: 0 };
+    tl.set(arrowG, { attr: { opacity: 1 } }, curveStartAt);
+    tl.set(endCapG, { attr: { opacity: 1 } }, curveStartAt);
+    tl.to(
+      proxy,
+      {
+        length: pathLength,
+        duration: curveDur,
+        ease: "none",
+        onUpdate: () => {
+          const pt = colorPath.getPointAtLength(proxy.length);
+          const pt2 = colorPath.getPointAtLength(
+            Math.min(proxy.length + 1, pathLength),
+          );
+          const angle =
+            Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * (180 / Math.PI);
+          setArrowTransform(pt.x, pt.y, angle);
+        },
+      },
+      curveStartAt,
+    );
+
+    tl.set(arrowG, { attr: { opacity: 0 } }, curveStartAt + curveDur);
+    tl.set(endCapG, { attr: { opacity: 0 } }, curveStartAt + curveDur);
+    tl.set(trailingCapG, { attr: { opacity: 1 } }, curveStartAt + curveDur);
+
+    tl.to(
+      paths,
+      {
+        strokeDashoffset: -pathLength,
+        duration: 1.5,
+        ease: "power2.inOut",
+      },
+      curveStartAt + curveDur,
+    );
+
+    const eraseProxy = { len: 0 };
+    tl.to(
+      eraseProxy,
+      {
+        len: pathLength,
+        duration: 1.5,
+        ease: "power2.inOut",
+        onUpdate: () => {
+          const pt = colorPath.getPointAtLength(eraseProxy.len);
+          const pt2 = colorPath.getPointAtLength(
+            Math.min(eraseProxy.len + 1, pathLength),
+          );
+          const angle =
+            Math.atan2(pt2.y - pt.y, pt2.x - pt.x) * (180 / Math.PI);
+          trailingCapG.setAttribute("transform", `translate(${pt.x},${pt.y}) rotate(${angle})`);
+        },
+      },
+      curveStartAt + curveDur,
+    );
+
+    tl.set(trailingCapG, { attr: { opacity: 0 } }, curveStartAt + curveDur + 1.5);
   });
 
-  // Phase 4: Exit (42→53)
-  tl.to(`${p} .block-row`, { borderRadius: "24px", duration: 2 }, 42);
-  tl.to(`${p} .row-top`, { xPercent: 120, duration: 5, ease: "power2.in" }, 43);
-  tl.to(`${p} .row-bot`, { xPercent: 120, duration: 5, ease: "power2.in" }, 44);
-  tl.to(`${p} .row-mid`, { xPercent: 120, duration: 8, ease: "power2.in" }, 45);
+  const svgRows = document.querySelectorAll(`${panel} .svg-container .svg-row`);
+  tl.to(
+    svgRows,
+    {
+      xPercent: 100,
+      duration: 2,
+      ease: "power3.inOut",
+      stagger: 0.15,
+    },
+    ">-0.5",
+  );
 
-  // Phase 5: Hold
-  tl.set({}, {}, 100);
+  tl.set({}, {}, 15.43);
 
   return tl;
 }
 
 const svgTl = buildSvgTimeline();
-
-// ── Rive Setup ──
 
 let riveInstance = null;
 let riveInputs = [];
@@ -95,8 +296,6 @@ riveInstance = new Rive({
 
 window.addEventListener("resize", () => riveInstance?.resizeDrawingSurfaceToCanvas());
 
-// ── Scrubber ──
-
 const scrubber = document.getElementById("scrubber");
 const progressDisplay = document.getElementById("progress-display");
 const svgPanel = document.getElementById("svg-panel");
@@ -109,21 +308,14 @@ scrubber.addEventListener("input", (e) => {
   if (riveInputs[0]) riveInputs[0].value = progress;
   svgTl.progress(progress / 100);
 
-  // Gradual bg transition matching script.js Phase 4 (42→46)
-  const bgStart = 42, bgEnd = 46;
-  const bgT = Math.min(1, Math.max(0, (progress - bgStart) / (bgEnd - bgStart)));
-  const lerp = (a, b, t) => a + (b - a) * t;
-  const fromRgb = [227, 227, 219]; // #e3e3db
-  const toRgb = [20, 20, 20];       // #141414
-  const r = Math.round(lerp(fromRgb[0], toRgb[0], bgT));
-  const g = Math.round(lerp(fromRgb[1], toRgb[1], bgT));
-  const b = Math.round(lerp(fromRgb[2], toRgb[2], bgT));
-  const bgColor = `rgb(${r},${g},${b})`;
-  svgPanel.style.backgroundColor = bgColor;
-  rivePanel.style.backgroundColor = bgColor;
+  if (progress >= 50) {
+    svgPanel.style.backgroundColor = "#141414";
+    rivePanel.style.backgroundColor = "#141414";
+  } else {
+    svgPanel.style.backgroundColor = "#e3e3db";
+    rivePanel.style.backgroundColor = "#e3e3db";
+  }
 });
-
-// ── View Mode Toggle ──
 
 const comparison = document.getElementById("comparison");
 document.querySelectorAll(".mode-toggle button").forEach((btn) => {

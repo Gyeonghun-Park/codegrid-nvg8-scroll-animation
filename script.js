@@ -58,11 +58,12 @@ function initCurves() {
 
 /**
  * Timeline: 100 units = scroll %
- *   Phase 1 (Enter):  15 → 25  — Blocks slide in (diamond tips)
- *   Phase 2 (Wipe):   25 → 37  — Second color blocks slide in (diamond tips)
- *   Phase 3 (Sweep):  33 → 45  — Third color wave slides in + curves draw/erase
- *   Phase 4 (Exit):   46 → 55  — Rounded rects slide out, bg darkens
- *   Phase 5 (Hold):   55 → 100 — Dark background
+ *   Phase 1 (Enter):  11 → 21  — Blocks slide in (diamond tips)
+ *   Phase 2 (Wipe):   21 → 33  — Second color blocks slide in
+ *   Phase 3 (Sweep):  29 → 40  — Third color wave + curves draw/erase
+ *   Curves:           28 → 37  — (unchanged) draw/erase
+ *   Phase 4 (Exit):   42 → 53  — Rounded rects slide out, bg darkens
+ *   Phase 5 (Hold):   53 → 100 — Dark background
  */
 function buildTimeline() {
   const tl = gsap.timeline();
@@ -71,38 +72,37 @@ function buildTimeline() {
   tl.set(".block-layer", { xPercent: -110 }, 0);
 
   // ────────────────────────────────────────────
-  // PHASE 1: ENTER (15 → 25)
+  // PHASE 1: ENTER (11 → 21)
   // ────────────────────────────────────────────
 
-  tl.fromTo(".row-top .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 15);
-  tl.fromTo(".row-mid .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 16);
-  tl.fromTo(".row-bot .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 17);
+  tl.fromTo(".row-top .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 11);
+  tl.fromTo(".row-mid .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 12);
+  tl.fromTo(".row-bot .layer-enter", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 13);
 
   // ────────────────────────────────────────────
-  // PHASE 2: WIPE (25 → 37)
+  // PHASE 2: WIPE (21 → 33)
   // ────────────────────────────────────────────
 
-  tl.fromTo(".row-top .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 25);
-  tl.fromTo(".row-bot .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 26);
-  tl.fromTo(".row-mid .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 12, ease: "power2.out" }, 27);
+  tl.fromTo(".row-top .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 21);
+  tl.fromTo(".row-bot .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 22);
+  tl.fromTo(".row-mid .layer-wipe", { xPercent: -110 }, { xPercent: 0, duration: 12, ease: "power2.out" }, 23);
 
   // ────────────────────────────────────────────
-  // PHASE 3: SWEEP + CURVES (33 → 46)
-  // Third color wave slides in while curves draw/erase across rows 2+3
+  // PHASE 3: SWEEP + CURVES (29 → 40)
   // ────────────────────────────────────────────
 
   // Sweep layers (third color wave) slide in
-  tl.fromTo(".row-top .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 33);
-  tl.fromTo(".row-mid .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 35);
-  tl.fromTo(".row-bot .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 34);
+  tl.fromTo(".row-top .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 29);
+  tl.fromTo(".row-mid .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 31);
+  tl.fromTo(".row-bot .layer-sweep", { xPercent: -110 }, { xPercent: 0, duration: 10, ease: "power2.out" }, 30);
 
   // Curve 1 (yellow + its border): draw in
   tl.to(["#curve-1-border", "#curve-1"], {
     strokeDashoffset: 0,
-    duration: 8,
-    ease: "power2.out",
+    duration: 6,
+    ease: "power1.out",
     stagger: 0,
-  }, 30);
+  }, 28);
 
   // Curve 1: erase (draw out the other end)
   ["#curve-1-border", "#curve-1"].forEach((sel) => {
@@ -111,18 +111,18 @@ function buildTimeline() {
     const len = path.getTotalLength();
     tl.to(sel, {
       strokeDashoffset: -len,
-      duration: 8,
+      duration: 7,
       ease: "power2.inOut",
-    }, 38);
+    }, 34);
   });
 
   // Curve 2 (orange + its border): draw in (staggered after curve 1)
   tl.to(["#curve-2-border", "#curve-2"], {
     strokeDashoffset: 0,
-    duration: 8,
-    ease: "power2.out",
+    duration: 6,
+    ease: "power1.out",
     stagger: 0,
-  }, 34);
+  }, 31);
 
   // Curve 2: erase
   ["#curve-2-border", "#curve-2"].forEach((sel) => {
@@ -131,13 +131,13 @@ function buildTimeline() {
     const len = path.getTotalLength();
     tl.to(sel, {
       strokeDashoffset: -len,
-      duration: 8,
+      duration: 7,
       ease: "power2.inOut",
-    }, 42);
+    }, 37);
   });
 
   // ────────────────────────────────────────────
-  // PHASE 4: EXIT (46 → 55)
+  // PHASE 4: EXIT (42 → 53)
   // ────────────────────────────────────────────
 
   const introEl = document.querySelector(".intro");
@@ -154,18 +154,18 @@ function buildTimeline() {
         introEl.classList.remove("dark");
       }
     },
-  }, 46);
+  }, 42);
 
   // Corners round
-  tl.to(".block-row", { borderRadius: "24px", duration: 2 }, 46);
+  tl.to(".block-row", { borderRadius: "24px", duration: 2 }, 42);
 
   // Staggered exit — fast slide-out
-  tl.to(".row-top", { xPercent: 120, duration: 5, ease: "power2.in" }, 47);
-  tl.to(".row-bot", { xPercent: 120, duration: 5, ease: "power2.in" }, 48);
-  tl.to(".row-mid", { xPercent: 120, duration: 8, ease: "power2.in" }, 49);
+  tl.to(".row-top", { xPercent: 120, duration: 5, ease: "power2.in" }, 43);
+  tl.to(".row-bot", { xPercent: 120, duration: 5, ease: "power2.in" }, 44);
+  tl.to(".row-mid", { xPercent: 120, duration: 8, ease: "power2.in" }, 45);
 
   // ────────────────────────────────────────────
-  // PHASE 5: HOLD (57 → 100)
+  // PHASE 5: HOLD (50 → 100)
   // ────────────────────────────────────────────
   tl.set({}, {}, 100);
 

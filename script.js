@@ -10,6 +10,26 @@ document.addEventListener("DOMContentLoaded", () => {
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
+  // Dynamic ratio compensation — prevents chunky/thin arrows at extreme aspect ratios
+  const containers = document.querySelectorAll(".svg-container, .svg-container-2");
+  function updateRatioScale() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const isMobile = vw <= 640;
+    let scale = 1;
+    if (isMobile) {
+      // Arrow visual height after rotation = 3·vw; if viewport is taller, scale to fill
+      const arrowHeight = 2 * vw;
+      if (vh > arrowHeight) scale = vh / arrowHeight;
+    } else {
+      // Each row thickness = vh/3; if viewport is wider than 2×height, rows look too thin
+      if (vw > 2 * vh) scale = vw / (2 * vh);
+    }
+    containers.forEach((c) => c.style.setProperty("--ratio-scale", scale.toFixed(3)));
+  }
+  updateRatioScale();
+  window.addEventListener("resize", updateRatioScale);
+
   // Adapt straight-line SVG viewBox to actual row aspect ratio for gap-free rendering
   const sampleRow = document.querySelector(".svg-container .svg-row");
   const rowW = sampleRow.clientWidth;

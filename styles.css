@@ -54,10 +54,11 @@ h1.intro-header-out {
 
 .svg-container,
 .svg-container-2 {
+  --ratio-scale: 1;
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scaleY(var(--ratio-scale));
   width: 300%;
   height: calc(100svh - 7.5px);
   display: flex;
@@ -108,7 +109,7 @@ h1.intro-header-out {
 
   .svg-container,
   .svg-container-2 {
-    transform: translate(-50%, -50%) rotate(-90deg);
+    transform: translate(-50%, -50%) rotate(-90deg) scaleX(var(--ratio-scale));
     width: 300%;
     height: 100vw;
   }

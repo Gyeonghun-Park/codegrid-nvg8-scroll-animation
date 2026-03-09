@@ -110,6 +110,6 @@ h1.intro-header-out {
   .svg-container-2 {
     transform: translate(-50%, -50%) rotate(-90deg);
     width: 300%;
-    height: calc(100vw - 7.5px);
+    height: 100vw;
   }
 }

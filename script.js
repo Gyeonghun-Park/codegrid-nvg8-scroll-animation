@@ -10,6 +10,20 @@ document.addEventListener("DOMContentLoaded", () => {
   gsap.ticker.add((time) => lenis.raf(time * 1000));
   gsap.ticker.lagSmoothing(0);
 
+  // Adapt straight-line SVG viewBox to actual row aspect ratio for gap-free rendering
+  const sampleRow = document.querySelector(".svg-container .svg-row");
+  const rowW = sampleRow.clientWidth;
+  const rowH = sampleRow.clientHeight;
+  const vbWidth = Math.round(360 * rowW / rowH);
+  const pathEnd = vbWidth - 180;
+
+  document.querySelectorAll(".svg-container .svg-row svg").forEach((svg) => {
+    svg.setAttribute("viewBox", `0 0 ${vbWidth} 360`);
+    svg.querySelectorAll("path").forEach((path) => {
+      path.setAttribute("d", `M180 180H${pathEnd}`);
+    });
+  });
+
   document.querySelectorAll(".svg-row svg path").forEach((originalPath) => {
     const borderPath = originalPath.cloneNode(true);
     const originalWidth = parseInt(originalPath.getAttribute("stroke-width"));
@@ -169,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tl.to(
       arrowG,
       {
-        x: 3180,
+        x: pathEnd,
         duration: 1.5,
         ease: "power2.out",
       },

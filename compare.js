@@ -3,6 +3,11 @@ import gsap from "gsap";
 
 const panel = "#svg-panel";
 
+// slice = cover: scale to fill row height, horizontal overflow is fine
+document.querySelectorAll(`${panel} .svg-container .svg-row svg`).forEach((svg) => {
+  svg.setAttribute("preserveAspectRatio", "xMidYMid slice");
+});
+
 document.querySelectorAll(`${panel} .svg-row svg path`).forEach((originalPath) => {
   const borderPath = originalPath.cloneNode(true);
   const originalWidth = parseInt(originalPath.getAttribute("stroke-width"));

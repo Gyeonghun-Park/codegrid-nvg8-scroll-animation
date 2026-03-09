@@ -85,7 +85,7 @@ h1.intro-header-out {
 }
 
 .svg-container .svg-row svg {
-  transform: translate(-50%, -50%) scaleY(1.03);
+  transform: translate(-50%, -50%);
 }
 
 .svg-container-2 svg {
@@ -101,13 +101,15 @@ h1.intro-header-out {
   will-change: stroke-dashoffset;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 640px) {
   section h1 {
     width: 90%;
   }
 
   .svg-container,
   .svg-container-2 {
-    width: 1000%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    width: 300%;
+    height: calc(100vw - 7.5px);
   }
 }

@@ -81,7 +81,7 @@
         width: 100%; height: 100%; overflow: visible;
       }
       #svg-panel .svg-container .svg-row svg {
-        transform: translate(-50%, -50%) scaleY(1.03);
+        transform: translate(-50%, -50%);
       }
       #svg-panel .svg-container-2 svg {
         position: absolute; top: 0%; left: 40%;
@@ -89,6 +89,15 @@
         transform: translate(-50%, -1%);
       }
       #svg-panel .svg-row svg path { will-change: stroke-dashoffset; }
+
+      @media (max-width: 640px) {
+        #svg-panel .svg-container,
+        #svg-panel .svg-container-2 {
+          transform: translate(-50%, -50%) rotate(-90deg);
+          width: 300%;
+          height: calc(100% - 7.5px);
+        }
+      }
     </style>
   </head>
   <body>

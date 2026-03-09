@@ -84,6 +84,10 @@ h1.intro-header-out {
   overflow: visible;
 }
 
+.svg-container .svg-row svg {
+  transform: translate(-50%, -50%) scaleY(1.03);
+}
+
 .svg-container-2 svg {
   position: absolute;
   top: 0%;
